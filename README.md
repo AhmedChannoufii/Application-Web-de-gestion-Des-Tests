@@ -69,14 +69,6 @@ Une application web complète pour la gestion des tests de contrôle qualité da
 - Le produit doit exister avant test
 
 ##  Méthodes Clés
-
-### ProductController.cs
-- `CheckTestHistory()` - Vérification produit en temps réel
-- `ValiderReglesMetier()` - Validation des règles métier
-- `GetSuggestionLogique()` - Suggestion intelligente de test
-- `EstProduitRejeteGlobal()` - Détection des rejets
-- `EstProduitTermine()` - Vérification de fin de cycle
-
 ### Fonctionnalités JavaScript
 - Validation de formulaire en temps réel
 - Filtrage dynamique des machines/opérateurs
