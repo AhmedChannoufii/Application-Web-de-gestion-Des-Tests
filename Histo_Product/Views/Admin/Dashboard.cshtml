@@ -1,0 +1,80 @@
+﻿@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Tableau de Bord Admin";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center bg-dark text-white p-3 rounded mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-crown me-2"></i>Tableau de Bord Administrateur
+        </h2>
+        <div>
+            <span class="me-3">Connecté en tant que : <strong>@Session["user"]</strong></span>
+            <a href="@Url.Action("Logout", "Log")" class="btn btn-outline-light btn-sm">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-tie fa-3x mb-3"></i>
+                    <h2>@ViewBag.OperateurCount</h2>
+                    <p class="mb-0 h5">Opérateurs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <i class="fas fa-user fa-3x mb-3"></i>
+                    <h2>@ViewBag.UtilisateurCount</h2>
+                    <p class="mb-0 h5">Utilisateurs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions Administrateur</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-cog me-2"></i>Gestion des Utilisateurs
+                        </a>
+                        <a href="@Url.Action("GestionOperateurs", "Admin")" class="btn btn-outline-warning btn-lg">
+                            <i class="fas fa-user-gear me-2"></i>Gestion des Opérateurs
+                        </a>
+                        <a href="@Url.Action("Dashboard", "Product")" class="btn btn-outline-success btn-lg">
+                            <i class="fas fa-vial me-2"></i>Création des Tests
+                        </a>
+                        <a href="@Url.Action("Recherche", "Product")" class="btn btn-outline-info btn-lg">
+                            <i class="fas fa-search me-2"></i>Recherche Avancée
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Activité Récente</h5>
+                </div>
+                <div class="card-body">
+                    <p>Dernière connexion : <strong>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</strong></p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Bienvenue dans votre espace administrateur.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

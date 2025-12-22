@@ -1,0 +1,310 @@
+﻿@model IEnumerable<Histo_Product.Models.Test>
+@{
+    ViewBag.Title = "Recherche Avancée";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary fw-bold">
+            <i class="fas fa-search me-2"></i>Recherche Avancée
+        </h1>
+    </div>
+
+    <!-- Carte de Recherche -->
+    <div class="card shadow border-0 mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-filter me-2"></i>Critères de Recherche
+            </h5>
+        </div>
+        <div class="card-body">
+            @using (Html.BeginForm("Recherche", "Product", FormMethod.Post, new { @class = "row g-3" }))
+            {
+                <!-- Numéro de Série -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Numéro de Série</label>
+                    <input type="text" name="numSerie" value="@Request["numSerie"]"
+                           class="form-control" />
+                </div>
+
+                <!-- Type de Test -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Type de Test</label>
+                    <select name="typeTest" class="form-select">
+                        <option value="">Tous les types</option>
+                        <option value="Test Initial" @(Request["typeTest"] == "Test Initial" ? "selected" : "")>Test Initial</option>
+                        <option value="Re-test Initial" @(Request["typeTest"] == "Re-test Initial" ? "selected" : "")>Re-test Initial</option>
+                        <option value="Contrôle Qualité" @(Request["typeTest"] == "Contrôle Qualité" ? "selected" : "")>Contrôle Qualité</option>
+                        <option value="Re-contrôle Qualité" @(Request["typeTest"] == "Re-contrôle Qualité" ? "selected" : "")>Re-contrôle Qualité</option>
+                        <option value="Test Client" @(Request["typeTest"] == "Test Client" ? "selected" : "")>Test Client</option>
+                    </select>
+                </div>
+
+                <!-- Date Début -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Date Début</label>
+                    <input type="date" name="startDate" value="@Request["startDate"]" class="form-control" />
+                </div>
+
+                <!-- Date Fin -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Date Fin</label>
+                    <input type="date" name="endDate" value="@Request["endDate"]" class="form-control" />
+                </div>
+
+                <!-- Résultat -->
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Résultat</label>
+                    <select name="resultat" class="form-select">
+                        <option value="">Tous résultats</option>
+                        <option value="True" @(Request["resultat"] == "True" ? "selected" : "")>Succès</option>
+                        <option value="False" @(Request["resultat"] == "False" ? "selected" : "")>Échec</option>
+                    </select>
+                </div>
+
+                <!-- Boutons d'Action -->
+                <div class="col-12 mt-4">
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="actionType" value="Rechercher"
+                                class="btn btn-primary px-4">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+
+                        @if (Model != null && Model.Any())
+                        {
+                            <button type="submit" name="actionType" value="ExporterExcel"
+                                    class="btn btn-success px-4">
+                                <i class="fas fa-file-excel me-2"></i>Exporter Excel
+                            </button>
+                        }
+
+                        <a href="@Url.Action("Recherche")" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-refresh me-2"></i>Réinitialiser
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    @if (Model != null)
+    {
+        if (Model.Any())
+        {
+            <!-- GRAPHIQUE DES STATISTIQUES -->
+            <div class="card shadow border-0 mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fas fa-chart-line me-2"></i>Statistiques des Tests par Type
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Graphique -->
+                        <div class="col-md-8">
+                            <canvas id="testStatsChart" height="250"></canvas>
+                        </div>
+                        <!-- Légende/Stats -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded">
+                                <h6>Résumé des Résultats</h6>
+                                <div class="mb-2">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Tests Réussis: <strong>@Model.Count(t => t.Result == true)</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-danger me-2">✗</span>
+                                    Tests Échoués: <strong>@Model.Count(t => t.Result == false)</strong>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-warning me-2">⏱</span>
+                                    En Cours: <strong>@Model.Count(t => t.Result == null)</strong>
+                                </div>
+                                <hr>
+                                <div>
+                                    <small class="text-muted">Total: @Model.Count() tests</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des Résultats -->
+            <div class="card shadow border-0">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 text-primary">
+                        <i class="fas fa-list me-2"></i>
+                        Résultats de la Recherche (@Model.Count() trouvés)
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">ID Test</th>
+                                    <th>Date</th>
+                                    <th>Num Série</th>
+                                    <th>Type Test</th>
+                                    <th>Machine</th>
+                                    <th>Software</th>
+                                    <th>Board</th>
+                                    <th>Opérateur</th>
+                                    <th>Résultat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    string operateurName = item.Operateur != null ?
+                                        $"{item.Operateur.Nom} {item.Operateur.Prénom}" : "Inconnu";
+
+                                    string machineName = item.Machine != null ?
+                                        $"{item.Machine.CodeMachine}" : "—";
+
+                                    string softwareVersion = !string.IsNullOrEmpty(item.TestSoftwareVersion) ?
+                                        item.TestSoftwareVersion :
+                                        (item.Machine != null ? item.Machine.SoftwareVersion : "—");
+
+                                    <tr>
+                                        <td class="ps-3"><strong>#@item.Id</strong></td>
+                                        <td>@(item.DateDebut?.ToString("dd/MM/yyyy HH:mm"))</td>
+                                        <td><strong class="text-primary">@item.Num_Serie</strong></td>
+                                        <td><span class="badge bg-info">@item.TypeTest</span></td>
+                                        <td>@machineName</td>
+                                        <td><code class="small">@softwareVersion</code></td>
+                                        <td>@(item.Board?.Designation ?? "—")</td>
+                                        <td>@operateurName</td>
+                                        <td>
+                                            @if (item.Result == true)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>RÉUSSI
+                                                </span>
+                                            }
+                                            else if (item.Result == false)
+                                            {
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times me-1"></i>ÉCHEC
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-clock me-1"></i>EN COURS
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Script pour le graphique -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    var ctx = document.getElementById('testStatsChart').getContext('2d');
+
+                    // Types de test
+                    var typesTest = ['Test Initial', 'Re-test Initial', 'Contrôle Qualité', 'Re-contrôle Qualité', 'Test Client', 'Re-test Client'];
+
+                    // Préparer les données
+                    var donneesReussis = [];
+                    var donneesEchecs = [];
+                    var donneesEnCours = [];
+
+                    // Remplir les données depuis le modèle
+                    @foreach (var type in new[] { "Test Initial", "Re-test Initial", "Contrôle Qualité", "Re-contrôle Qualité", "Test Client", "Re-test Client" })
+                    {
+                        <text>
+                            donneesReussis.push(@Model.Count(t => t.TypeTest == type && t.Result == true));
+                            donneesEchecs.push(@Model.Count(t => t.TypeTest == type && t.Result == false));
+                            donneesEnCours.push(@Model.Count(t => t.TypeTest == type && t.Result == null));
+                        </text>
+                    }
+
+                    // Créer le graphique
+                    var chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: typesTest,
+                            datasets: [
+                                {
+                                    label: 'Tests Réussis',
+                                    data: donneesReussis,
+                                    backgroundColor: '#28a745',
+                                    borderColor: '#28a745',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Tests Échoués',
+                                    data: donneesEchecs,
+                                    backgroundColor: '#dc3545',
+                                    borderColor: '#dc3545',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'En Cours',
+                                    data: donneesEnCours,
+                                    backgroundColor: '#ffc107',
+                                    borderColor: '#ffc107',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Performance des Tests par Type'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Nombre de Tests'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: 'Types de Test'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            </script>
+        }
+        else
+        {
+            <div class="alert alert-warning text-center py-4">
+                <i class="fas fa-search fa-3x mb-3 text-warning"></i>
+                <h4 class="text-warning">Aucun résultat trouvé</h4>
+                <p class="text-muted">Aucun test ne correspond à vos critères de recherche.</p>
+            </div>
+        }
+    }
+    else if (ViewBag.Message != null)
+    {
+        <div class="alert alert-info text-center py-4">
+            <i class="fas fa-info-circle fa-2x mb-2 text-info"></i>
+            <p class="mb-0">@ViewBag.Message</p>
+        </div>
+    }
+</div>

@@ -1,0 +1,198 @@
+﻿@model List<Histo_Product.Models.Profil>
+
+@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Gestion des Utilisateurs";
+
+    var utilisateursOnly = Model.Where(u => u.Role == "Utilisateur").ToList();
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users me-2"></i>Gestion des Utilisateurs</h2>
+        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Nouvel Utilisateur</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Nom d'utilisateur</label>
+                    <input type="text" id="newUsername" class="form-control" placeholder="Nom d'utilisateur">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" id="newPassword" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <!-- ← CORRECTION : "clas" → "class" et fermer le guillemet -->
+                    <label class="form-label">Email</label>
+                    <input type="text" id="newEmail" class="form-control" placeholder="exemple@asteelflash.com">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Rôle</label>
+                    <select id="newRole" class="form-select">
+                        <option value="Utilisateur">Utilisateur</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-success" onclick="addUser()">
+                    <i class="fas fa-plus me-1"></i> Créer Utilisateur
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Liste des Utilisateurs</h5>
+        </div>
+        <div class="card-body">
+            @if (utilisateursOnly.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom d'utilisateur</th>
+                                <th>Email</th>
+                                <th>Rôle</th>
+                                <th>Date création</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in utilisateursOnly)
+                            {
+                                <tr id="user-@user.Id">
+                                    <td>@user.Id</td>
+                                    <td>@user.Username</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(user.Email))
+                                        {
+                                            @user.Email
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@user.Role</span>
+                                    </td>
+                                    <td>@user.CreateDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <button class="btn btn-warning btn-sm me-1" onclick="changePassword(@user.Id, '@user.Username')">
+                                            <i class="fas fa-key me-1"></i> MDP
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteUser(@user.Id, '@user.Username')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Aucun utilisateur trouvé.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function addUser() {
+            var username = $('#newUsername').val();
+            var password = $('#newPassword').val();
+            var email = $('#newEmail').val();
+            var role = $('#newRole').val();
+
+            if (!username || !password) {
+                alert('Veuillez remplir le nom d\'utilisateur et le mot de passe');
+                return;
+            }
+
+            $.post('@Url.Action("AddUser", "Admin")', {
+                username: username,
+                password: password,
+                role: role,
+                email: email
+            }).done(function (data) {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            }).fail(function () {
+                alert('Erreur de connexion');
+            });
+        }
+
+        function deleteUser(userId, username) {
+            if (confirm('Supprimer l\'utilisateur "' + username + '" ?')) {
+                $.post('@Url.Action("DeleteUser", "Admin")', { userId: userId })
+                    .done(function (data) {
+                        if (data.success) {
+                            $('#user-' + userId).remove();
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+            }
+        }
+
+        function changePassword(userId, username) {
+            var newPassword = prompt("Nouveau mot de passe pour " + username + ":");
+
+            if (newPassword) {
+                var confirmPassword = prompt("Confirmez le mot de passe:");
+
+                if (newPassword !== confirmPassword) {
+                    alert("Les mots de passe ne correspondent pas");
+                    return;
+                }
+
+                $.post('@Url.Action("ResetUserPassword", "Admin")', {
+                    userId: userId,
+                    newPassword: newPassword
+                }).done(function (data) {
+                    if (data.success) {
+                        alert("✅ " + data.message);
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+
+    <style>
+        .badge {
+            font-size: 0.8rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+}

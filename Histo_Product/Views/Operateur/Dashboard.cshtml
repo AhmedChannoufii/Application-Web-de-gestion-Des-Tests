@@ -1,0 +1,439 @@
+﻿@model IEnumerable<Histo_Product.Models.Test>
+@{
+    ViewBag.Title = "Tableau de Bord Opérateur";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var operateur = ViewBag.OperateurConnecte as Histo_Product.Models.Operateur;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="text-primary fw-bold mb-2">
+            <i class="fas fa-tachometer-alt me-2"></i>Tableau de Bord Opérateur
+        </h1>
+        <p class="text-muted mb-0">
+            Bienvenue, <strong>@(operateur?.Prénom ?? "") @(operateur?.Nom ?? "")</strong> - @(operateur?.Matricule ?? "")
+            <span class="text-info"> (@(operateur?.Fonction ?? "")) </span>
+        </p>
+    </div>
+    <div class="text-end">
+        <a href="@Url.Action("Logout", "Log")" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-sign-out-alt me-1"></i>Déconnexion
+        </a>
+    </div>
+</div>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tests En Cours
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(t => t.Result == null)
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-play-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Tests Réussis
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(t => t.Result == true)
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Tests Échoués
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(t => t.Result == false)
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Total Assignés
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count()
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tests Assignés -->
+    <div class="card shadow border-0">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-list-check me-2"></i>
+                Mes Tests Assignés (@Model.Count() tests)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">ID Test</th>
+                            <th>Num Série</th>
+                            <th>Type Test</th>
+                            <th>Board</th>
+                            <th>Machine</th>
+                            <th>Software Version</th>
+                            <th>Date Assigné</th>
+                            <th>Statut</th>
+                            <th width="300" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var test in Model.OrderBy(t => t.Result == null ? 0 : 1))
+                            {
+                                <tr>
+                                    <td class="ps-3"><strong class="text-muted">#@test.Id</strong></td>
+                                    <td><strong class="text-primary">@test.Num_Serie</strong></td>
+                                    <td><span class="badge bg-info">@test.TypeTest</span></td>
+                                    <td>@(test.Board?.Code_AsteelFlash ?? "—")</td>
+                                    <td>
+                                        @if (test.Machine != null)
+                                        {
+                                            <span class="text-dark">@test.Machine.NomMachine</span>
+                                            <small class="text-muted d-block">@test.Machine.CodeMachine</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(test.TestSoftwareVersion))
+                                        {
+                                            <span class="badge bg-secondary">@test.TestSoftwareVersion</span>
+                                        }
+                                        else if (test.Machine != null)
+                                        {
+                                            <span class="badge bg-secondary">@test.Machine.SoftwareVersion</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>@(test.DateDebut?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                                    <td>
+                                        @if (test.Result == true)
+                                        {
+                                            <span class="badge bg-success">✅ RÉUSSI</span>
+                                        }
+                                        else if (test.Result == false)
+                                        {
+                                            <span class="badge bg-danger">❌ ÉCHEC</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">⏳ EN COURS</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (test.Result == null)
+                                        {
+                                            if (test.ResultatTemporaire.HasValue)
+                                            {
+                                                <!-- ÉTAPE 2: Sélection faite - 2 BOUTONS + TIMER -->
+                                                <div class="confirmation-panel" id="confirmation-@test.Id">
+                                                    <div class="btn-group-vertical btn-group-sm w-100">
+                                                        <div class="btn-group btn-group-sm mb-2">
+                                                            <span class="btn @(test.ResultatTemporaire.Value ? "btn-success" : "btn-danger") disabled flex-grow-1">
+                                                                @if (test.ResultatTemporaire.Value)
+                                                                {
+                                                                    <text>✅ RÉUSSI</text>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <text>❌ ÉCHEC</text>
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        <div class="btn-group btn-group-sm w-100">
+                                                            <button class="btn btn-warning flex-fill" onclick="modifierResultat(@test.Id)" title="Modifier la sélection">
+                                                                <i class="fas fa-edit me-1"></i>Modifier
+                                                            </button>
+                                                            <button class="btn btn-success flex-fill" onclick="confirmerResultat(@test.Id)" title="Confirmer définitivement">
+                                                                <i class="fas fa-check me-1"></i>Confirmer
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="timer-container mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fas fa-clock me-1"></i>
+                                                            Confirmation automatique dans : <span id="timer-@test.Id">01:00</span>
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <!-- ÉTAPE 1: Aucune sélection faite -->
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-success" onclick="selectionnerResultat(@test.Id, true)" title="Marquer comme réussi">
+                                                        <i class="fas fa-check me-1"></i>Réussi
+                                                    </button>
+                                                    <button class="btn btn-danger" onclick="selectionnerResultat(@test.Id, false)" title="Marquer comme échec">
+                                                        <i class="fas fa-times me-1"></i>Échec
+                                                    </button>
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <!-- ÉTAPE 3: Résultat finalisé - AFFICHER "TERMINÉ" -->
+                                            <span class="badge bg-secondary fs-6">
+                                                Terminé
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-muted"></i><br>
+                                    <h5 class="text-muted">Aucun test assigné</h5>
+                                    <p class="text-muted">Vous n'avez aucun test en attente</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Dictionnaire pour stocker les timers
+        const timers = {};
+
+        function selectionnerResultat(testId, resultat) {
+            if (!confirm(`Sélectionner : ${resultat ? 'RÉUSSI' : 'ÉCHEC'} ?`)) {
+                return;
+            }
+
+            fetch('@Url.Action("SelectionnerResultat", "Operateur")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    testId: testId,
+                    resultat: resultat
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Recharger la page pour voir les 2 boutons + timer
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Erreur réseau: ' + error);
+            });
+        }
+
+        function confirmerResultat(testId) {
+            // SAUVEGARDE DIRECTE SANS CONFIRMATION
+            if (timers[testId]) {
+                clearInterval(timers[testId]);
+                delete timers[testId];
+            }
+
+            fetch('@Url.Action("ConfirmerResultat", "Operateur")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    testId: testId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + data.message);
+                    // Redémarrer le timer en cas d'erreur
+                    demarrerTimer(testId);
+                }
+            })
+            .catch(error => {
+                alert('Erreur réseau: ' + error);
+                // Redémarrer le timer en cas d'erreur
+                demarrerTimer(testId);
+            });
+        }
+
+        function modifierResultat(testId) {
+            if (confirm('Modifier votre sélection ? Le timer sera réinitialisé.')) {
+                // Arrêter le timer
+                if (timers[testId]) {
+                    clearInterval(timers[testId]);
+                    delete timers[testId];
+                }
+
+                // Réinitialiser la sélection
+                fetch('@Url.Action("SelectionnerResultat", "Operateur")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        testId: testId,
+                        resultat: null
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Erreur: ' + data.message);
+                    // Redémarrer le timer en cas d'erreur
+                    demarrerTimer(testId);
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur réseau: ' + error);
+                    // Redémarrer le timer en cas d'erreur
+                    demarrerTimer(testId);
+                });
+            }
+        }
+
+        function demarrerTimer(testId) {
+            let tempsRestant = 60; // 1 minute en secondes
+
+            const timerElement = document.getElementById(`timer-${testId}`);
+            if (!timerElement) return;
+
+            if (timers[testId]) {
+                clearInterval(timers[testId]);
+            }
+
+            timers[testId] = setInterval(() => {
+                tempsRestant--;
+
+                const minutes = Math.floor(tempsRestant / 60);
+                const secondes = tempsRestant % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')}`;
+
+                if (tempsRestant <= 15) {
+                    timerElement.className = 'text-danger';
+                }
+
+                if (tempsRestant <= 0) {
+                    clearInterval(timers[testId]);
+                    // 🔥 SAUVEGARDE AUTOMATIQUE SANS ALERT
+                    confirmerResultat(testId);
+                }
+            }, 1000);
+        }
+
+        // Démarrer les timers au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            @foreach (var test in Model.Where(t => t.Result == null && t.ResultatTemporaire.HasValue))
+            {
+                <text>
+                setTimeout(() => demarrerTimer(@test.Id), 1000);
+                </text>
+            }
+        });
+    </script>
+
+    <style>
+        .confirmation-panel {
+            background-color: #f8f9fa;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .timer-container {
+            margin-top: 8px;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-group-vertical .btn-group {
+            margin-bottom: 5px;
+        }
+
+        .fs-6 {
+            font-size: 1rem !important;
+        }
+
+        .text-danger {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+
+        .flex-fill {
+            flex: 1 1 auto;
+        }   
+    </style>
+}

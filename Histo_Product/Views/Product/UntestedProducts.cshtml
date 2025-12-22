@@ -1,0 +1,108 @@
+﻿@model IEnumerable<Histo_Product.Models.Product>
+@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Produits Non Testés";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-primary fw-bold mb-2">
+                <i class="fas fa-clock me-2"></i>Produits Non Testés
+            </h1>
+           
+        </div>
+        <div>
+            <a href="@Url.Action("Dashboard", "Product")" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
+            </a>
+        </div>
+    </div>
+
+    <!-- Messages d'alerte -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-list me-2"></i>
+                Liste des produits en attente de test (@Model.Count() produits)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Num Série</th>
+                            <th>Ligne de Production</th>
+                            <th>Date de Création</th>
+                            <th>Statut</th>
+                            <!-- SUPPRIMÉ: <th width="150" class="text-center">Action</th> -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var product in Model.OrderBy(p => p.Date_Creation))
+                            {
+                                <tr>
+                                    <td class="ps-3">
+                                        <strong class="text-primary">@product.Num_Serie</strong>
+                                    </td>
+                                    <td>
+                                        @if (product.Ligne != null)
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-industry me-1"></i>@product.Ligne.Nom_Ligne
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>@product.Date_Creation.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-clock me-1"></i>En attente de test
+                                        </span>
+                                    </td>
+                                    <!-- SUPPRIMÉ: Colonne Action avec bouton -->
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <!-- Changé de 5 à 4 colonnes -->
+                                    <i class="fas fa-check-circle fa-3x mb-3 text-success"></i><br>
+                                    <h5 class="text-success">Félicitations !</h5>
+                                    <p class="text-muted">Tous les produits ont été testés</p>
+                                    <a href="@Url.Action("Dashboard", "Product")" class="btn btn-success mt-2">
+                                        <i class="fas fa-history me-2"></i>Voir l'historique des tests
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>a

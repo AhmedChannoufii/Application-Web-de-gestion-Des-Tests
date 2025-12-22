@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .navbar .btn {
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .navbar .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .btn-outline-primary:hover {
+            background-color: #0d6efd;
+            color: #fff !important;
+            border-color: #0d6efd;
+        }
+        .btn-outline-success:hover {
+            background-color: #198754;
+            color: #fff !important;
+            border-color: #198754;
+        }
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            color: #fff !important;
+            border-color: #dc3545;
+        }
+        .navbar-brand-custom {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #2c3e50 !important;
+        }
+        .user-info {
+            color: #2c3e50 !important;
+            font-weight: 500;
+        }
+        @@media (max-width: 768px) {
+            .navbar .btn {
+                margin: 5px 0;
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR CONDITIONNELLE : disparaît si ViewBag.HideNavbar = true -->
+    @if (ViewBag.HideNavbar == null || !(bool)ViewBag.HideNavbar)
+    {
+        <nav class="navbar navbar-expand-sm navbar-light bg-white mb-4 py-2 border-bottom">
+            <div class="container">
+                
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        @if (Session["user"] != null)
+                        {
+                            <!-- Indicateur Utilisateur Connecté -->
+                            <li class="nav-item me-3">
+                                <span class="user-info">
+                                    <i class="fas fa-user me-1 text-primary"></i>@Session["user"]
+                                    <small class="text-muted d-block">(@Session["role"])</small>
+                                </span>
+                            </li>
+                            if (Session["role"]?.ToString() == "Administrateur")
+                            {
+                                <li class="nav-item">
+                                    <a class="btn btn-outline-info btn-sm mx-1 px-3 fw-bold"
+                                       href="@Url.Action("Dashboard", "Admin")"
+                                       style="border-radius: 20px; border-width: 2px;">
+                                        <i class="fas fa-tachometer-alt me-1"></i>Retour au Tableau de Bord
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Bouton Recherche -->
+                            <li class="nav-item">
+                                <a class="btn btn-outline-primary btn-sm mx-1 px-3 fw-bold"
+                                   href="@Url.Action("Recherche", "Product")"
+                                   style="border-radius: 20px; border-width: 2px;">
+                                    <i class="fas fa-search me-1"></i>Recherche Avancée
+                                </a>
+                            </li>
+
+                            <!-- Bouton Gestion Produits -->
+                            <li class="nav-item">
+                                <a class="btn btn-outline-success btn-sm mx-1 px-3 fw-bold"
+                                   href="@Url.Action("Dashboard", "Product")"
+                                   style="border-radius: 20px; border-width: 2px;">
+                                    <i class="fas fa-cogs me-1"></i>Creation Des Tests
+                                </a>
+                            </li>
+
+                            <!-- Bouton Déconnexion -->
+                            <li class="nav-item">
+                                <a class="btn btn-outline-danger btn-sm mx-1 px-3 fw-bold"
+                                   href="@Url.Action("Logout", "Log")"
+                                   style="border-radius: 20px; border-width: 2px;">
+                                    <i class="fas fa-sign-out-alt me-1"></i>Déconnecter
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="btn btn-primary btn-sm px-4 fw-bold text-white"
+                                   href="@Url.Action("Login", "Log")"
+                                   style="border-radius: 20px; border: none;">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Connexion
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    }
+
+    <!-- CONTENU DE LA PAGE -->
+    <div class="container body-content">
+        @RenderBody()
+
+        <!-- FOOTER CONDITIONNEL : disparaît aussi sur les pages admin -->
+        @if (ViewBag.HideNavbar == null || !(bool)ViewBag.HideNavbar)
+        {
+            <hr />
+            <footer class="text-center py-4 text-muted">
+                
+            </footer>
+        }
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,216 @@
+﻿@model IEnumerable<Histo_Product.Models.Product>
+@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Produits Terminés";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-success">
+            <i class="fas fa-check-circle me-2"></i>Produits Terminés
+        </h1>
+        <a href="@Url.Action("Dashboard")" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Liste des Produits Terminés
+                <span class="badge bg-light text-success ms-2">@Model.Count()</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Numéro Série</th>
+                            <th>Workflow Complet</th>
+                            <th>Date Finalisation</th>
+                            <th>Nb Tests</th>
+                            <th>Durée Totale</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var produit in Model)
+                        {
+                            var tests = produit.Tests.OrderBy(t => t.DateDebut).ToList();
+                            var testClientReussi = tests.FirstOrDefault(t => t.TypeTest == "Test Client" && t.Result == true);
+                            var premierTest = tests.FirstOrDefault();
+                            var dernierTest = tests.LastOrDefault();
+
+                            // Calcul de la durée totale
+                            TimeSpan dureeTotale = TimeSpan.Zero;
+                            if (premierTest != null && dernierTest != null)
+                            {
+                                dureeTotale = (dernierTest.DateDebut - premierTest.DateDebut).Value;
+                            }
+
+                            <tr>
+                                <td class="ps-3">
+                                    <strong class="text-success">@produit.Num_Serie</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Début: @(premierTest?.DateDebut?.ToString("dd/MM/yyyy") ?? "N/A")
+                                    </small>
+                                </td>
+                                <td>
+                                    <!-- Workflow complet -->
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-1" title="Test Initial">TI</span>
+                                        <i class="fas fa-arrow-right text-muted mx-1 small"></i>
+                                        <span class="badge bg-info me-1" title="Contrôle Qualité">CQ</span>
+                                        <i class="fas fa-arrow-right text-muted mx-1 small"></i>
+                                        <span class="badge bg-purple" title="Test Client">TC</span>
+                                    </div>
+                                    
+                                </td>
+                                <td>
+                                    @if (testClientReussi != null)
+                                    {
+                                        <strong>@testClientReussi.DateDebut.Value.ToString("dd/MM/yyyy HH:mm")</strong>
+                                        <br>
+                                        <small class="text-muted">Test Client réussi</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark">@tests.Count</span>
+                                    <br>
+                                    
+                                </td>
+                                <td>
+                                    @if (dureeTotale.TotalDays >= 1)
+                                    {
+                                        <span class="badge bg-secondary">@dureeTotale.TotalDays.ToString("0") j</span>
+                                    }
+                                    else if (dureeTotale.TotalHours >= 1)
+                                    {
+                                        <span class="badge bg-secondary">@dureeTotale.TotalHours.ToString("0") h</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@dureeTotale.TotalMinutes.ToString("0") min</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-info" onclick="voirHistorique('@produit.Num_Serie')" title="Voir historique complet">
+                                        <i class="fas fa-history me-1"></i>Historique
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">Aucun produit terminé</h4>
+                <p class="text-muted">Aucun produit n'a encore complété tous les tests avec succès</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Historique -->
+<div class="modal fade" id="historiqueModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Historique des Tests</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="historiqueContent">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+     function voirHistorique(numSerie) {
+    document.getElementById('historiqueContent').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Chargement...</span>
+            </div>
+            <p class="mt-2">Chargement de l'historique...</p>
+        </div>`;
+
+    new bootstrap.Modal(document.getElementById('historiqueModal')).show();
+
+    // Charger l'historique
+    fetch('@Url.Action("GetTestHistory", "Product")?numSerie=' + encodeURIComponent(numSerie))
+        .then(response => response.json())
+        .then(data => {
+            let html = `<h6 class="text-primary mb-3">Historique complet pour: <strong>${numSerie}</strong></h6>`;
+
+            if (data.tests && data.tests.length > 0) {
+                html += `
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Type Test</th>
+                                    <th>Résultat</th>
+                                    <th>Opérateur</th>
+                                    <th>Machine</th>
+                                    <th>Board</th> 
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                data.tests.forEach(test => {
+                    const resultat = test.result === true ? 'RÉUSSI' :
+                                   test.result === false ? 'ÉCHEC' : 'EN COURS';
+                    const badgeClass = test.result === true ? 'bg-success' :
+                                     test.result === false ? 'bg-danger' : 'bg-warning';
+
+                    html += `
+                        <tr>
+                            <td><strong>${test.typeTest}</strong></td>
+                            <td><span class="badge ${badgeClass}">${resultat}</span></td>
+                            <td><small>${test.operateur}</small></td>
+                            <td><small>${test.machine}</small></td>
+                            <td><small>${test.board}</small></td> <!-- ✅ AJOUTÉ -->
+                        </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+            } else {
+                html += `<div class="alert alert-warning">Aucun test trouvé pour ce produit</div>`;
+            }
+
+            document.getElementById('historiqueContent').innerHTML = html;
+        })
+        .catch(error => {
+            document.getElementById('historiqueContent').innerHTML = `
+                <div class="alert alert-danger">
+                    Erreur lors du chargement de l'historique
+                </div>`;
+            console.error(error);
+        });
+}
+    </script>
+
+    <style>
+        .bg-purple {
+            background-color: #6f42c1 !important;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a !important;
+        }
+    </style>
+}

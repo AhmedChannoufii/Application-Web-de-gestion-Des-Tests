@@ -1,0 +1,267 @@
+﻿@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Gestion des Opérateurs";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-gear me-2"></i>Gestion des Opérateurs</h2>
+        <div>
+            <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Retour au Tableau de Bord
+            </a>
+        </div>
+    </div>
+
+    <!-- Section : Opérateurs sans compte -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="fas fa-user-plus me-2"></i>Opérateurs sans Compte
+                <span class="badge bg-light text-dark ms-2">@ViewBag.CountSansCompte</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.CountSansCompte > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom Complet</th>
+                                <th>Email</th>
+                                <th>Fonction</th>
+                                <th>Service</th>
+                                <th width="200">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var op in ViewBag.OperateursSansCompte as List<Histo_Product.Models.Operateur>)
+                            {
+                                string badgeClass = "bg-secondary";
+                                if (op.Fonction == "Technicien")
+                                {
+                                    badgeClass = "bg-info";
+                                }
+                                else if (op.Fonction == "Ingénieur")
+                                {
+                                    badgeClass = "bg-warning";
+                                }
+                                else if (op.Fonction == "Superviseur")
+                                {
+                                    badgeClass = "bg-success";
+                                }
+
+                                <tr>
+                                    <td><strong>@op.Matricule</strong></td>
+                                    <td>@op.Nom @op.Prénom</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(op.Email))
+                                        {
+                                            <a href="mailto:@op.Email" class="text-decoration-none">
+                                                <i class="fas fa-envelope me-1 text-muted"></i>@op.Email
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @badgeClass">@op.Fonction</span>
+                                    </td>
+                                    <td>@op.Service</td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm" onclick="createOperateurAccount(@op.Id, '@op.Matricule')">
+                                            <i class="fas fa-user-plus me-1"></i> Créer Compte
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-success text-center">
+                    <i class="fas fa-check-circle me-2"></i>Tous les opérateurs ont un compte !
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Section : Opérateurs avec compte -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-user-check me-2"></i>Opérateurs avec Compte
+                <span class="badge bg-light text-success ms-2">@ViewBag.CountAvecCompte</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.CountAvecCompte > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Compte</th>
+                                <th>Opérateur</th>
+                                <th>Email</th>
+                                <th>Fonction</th>
+                                <th>Service</th>
+                               
+                                <th width="150">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in ViewBag.OperateursAvecCompte as List<Histo_Product.Models.Operateur>)
+                            {
+                                string badgeClass = "bg-secondary";
+                                if (item.Fonction == "Technicien")
+                                {
+                                    badgeClass = "bg-info";
+                                }
+                                else if (item.Fonction == "Ingénieur")
+                                {
+                                    badgeClass = "bg-warning";
+                                }
+                                else if (item.Fonction == "Superviseur")
+                                {
+                                    badgeClass = "bg-success";
+                                }
+
+                                <tr>
+                                    <td><strong>@item.Matricule</strong></td>
+                                    <td>@item.Nom @item.Prénom</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.Email))
+                                        {
+                                            <a href="mailto:@item.Email" class="text-decoration-none">
+                                                <i class="fas fa-envelope me-1 text-muted"></i>@item.Email
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @badgeClass">@item.Fonction</span>
+                                    </td>
+                                    <td>@item.Service</td>
+                                  
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-warning" onclick="changePassword(@item.Id, '@item.Matricule')" title="Modifier le mot de passe">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                            <button class="btn btn-danger" onclick="deleteAccount(@item.Id, '@item.Matricule')" title="Supprimer le compte">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>Aucun opérateur avec compte pour le moment.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function createOperateurAccount(operateurId, matricule) {
+            var password = prompt(`Créer un compte pour ${matricule}\n\nMot de passe:`, matricule);
+
+            if (password && password.length >= 3) {
+                $.post('/Admin/CreateOperateurAccount', {
+                    operateurId: operateurId,
+                    password: password
+                }).done(function (data) {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                }).fail(function () {
+                    alert('❌ Erreur de connexion au serveur');
+                });
+            } else if (password) {
+                alert('❌ Le mot de passe doit faire au moins 3 caractères');
+            }
+        }
+
+        // SUPPRIMÉ : La fonction togglePassword() a été complètement enlevée
+
+        function changePassword(operateurId, username) {
+            var newPassword = prompt(`Changer le mot de passe pour ${username}:\n\nNouveau mot de passe:`, '');
+
+            if (newPassword && newPassword.length >= 3) {
+                $.post('/Admin/ChangeOperateurPassword', {
+                    operateurId: operateurId,
+                    newPassword: newPassword
+                }).done(function (data) {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                }).fail(function () {
+                    alert('❌ Erreur de connexion au serveur');
+                });
+            } else if (newPassword) {
+                alert('❌ Le mot de passe doit faire au moins 3 caractères');
+            }
+        }
+
+        function deleteAccount(operateurId, username) {
+            if (confirm(`Êtes-vous sûr de vouloir supprimer le compte de ${username} ?\n\nL'opérateur restera dans le système mais ne pourra plus se connecter.`)) {
+                $.post('/Admin/DeleteOperateurAccount', {
+                    operateurId: operateurId
+                }).done(function (data) {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                }).fail(function () {
+                    alert('❌ Erreur de connexion au serveur');
+                });
+            }
+        }
+    </script>
+
+    <style>
+        .input-group-sm {
+            width: 150px;
+        }
+
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Style pour les emails */
+        .table td a[href^="mailto:"] {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+            .table td a[href^="mailto:"]:hover {
+                color: #0d6efd;
+            }
+    </style>
+}

@@ -1,0 +1,215 @@
+﻿@model IEnumerable<Histo_Product.Models.Product>
+@{
+    ViewBag.HideNavbar = true;
+    ViewBag.Title = "Produits Rejetés";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-danger">
+            <i class="fas fa-ban me-2"></i>Produits Rejetés
+        </h1>
+        <div>
+            
+            <a href="@Url.Action("Dashboard")" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Retour au Tableau de Bord
+            </a>
+        </div>
+    </div>
+
+   
+
+    <!-- Tableau Produits Rejetés -->
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Liste des Produits Rejetés
+                <span class="badge bg-light text-danger ms-2">@Model.Count()</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Numéro Série</th>
+                            <th>Type Rejet</th>
+                            <th>Cause</th>
+                            <th>Date Rejet</th>
+                            <th>Nb Tests</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var produit in Model)
+                        {
+                            var tests = produit.Tests.OrderByDescending(t => t.DateDebut).ToList();
+                            var dernierTest = tests.FirstOrDefault();
+                            var premierTest = tests.OrderBy(t => t.DateDebut).FirstOrDefault();
+
+                            // Logique de détection de rejet
+                            var echecsTestInitial = tests.Count(t =>
+                                (t.TypeTest == "Test Initial" || t.TypeTest == "Re-test Initial") && t.Result == false);
+                            var echecsControleQualite = tests.Count(t =>
+                                (t.TypeTest == "Contrôle Qualité" || t.TypeTest == "Re-contrôle Qualité") && t.Result == false);
+                            var echecsTestClient = tests.Count(t =>
+                                (t.TypeTest == "Test Client" || t.TypeTest == "Re-test Client") && t.Result == false);
+
+                            string typeRejet = "Inconnu";
+                            string causeRejet = "";
+
+                            if (echecsTestInitial >= 2)
+                            {
+                                typeRejet = "Test Initial";
+                                causeRejet = $"{echecsTestInitial} échecs Test Initial/Re-test";
+                            }
+                            else if (echecsControleQualite >= 2)
+                            {
+                                typeRejet = "Contrôle Qualité";
+                                causeRejet = $"{echecsControleQualite} échecs Contrôle Qualité/Re-contrôle";
+                            }
+                            else if (echecsTestClient >= 2)
+                            {
+                                typeRejet = "Test Client";
+                                causeRejet = $"{echecsTestClient} échecs Test Client/Re-test";
+                            }
+
+                            <tr>
+                                <td class="ps-3">
+                                    <strong class="text-danger">@produit.Num_Serie</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        Premier test: @(premierTest?.DateDebut?.ToString("dd/MM/yyyy") ?? "N/A")
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger">@typeRejet</span>
+                                </td>
+                                <td>
+                                    <small>@causeRejet</small>
+                                   
+                                </td>
+                                <td>
+                                    @if (dernierTest != null)
+                                    {
+                                        @dernierTest.DateDebut.Value.ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark">@tests.Count</span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-info" onclick="voirHistorique('@produit.Num_Serie')" title="Voir historique complet">
+                                        <i class="fas fa-history me-1"></i>Historique
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="card-body text-center py-5">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h4 class="text-success">Aucun produit rejeté</h4>
+                <p class="text-muted">Tous les produits respectent les critères de qualité</p>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Modal Historique -->
+<div class="modal fade" id="historiqueModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Historique des Tests</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="historiqueContent">
+                <!-- Contenu chargé ici -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function voirHistorique(numSerie) {
+            // Afficher loading
+            document.getElementById('historiqueContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                    <p class="mt-2">Chargement de l'historique...</p>
+                </div>`;
+
+            new bootstrap.Modal(document.getElementById('historiqueModal')).show();
+
+            // Charger l'historique
+            fetch('@Url.Action("GetTestHistory", "Product")?numSerie=' + encodeURIComponent(numSerie))
+                .then(response => response.json())
+                .then(data => {
+                    let html = `<h6 class="text-primary mb-3">Historique complet pour: <strong>${numSerie}</strong></h6>`;
+
+                    if (data.tests && data.tests.length > 0) {
+                        html += `
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Type Test</th>
+                                            <th>Résultat</th>
+                                            <th>Opérateur</th>
+                                            <th>Machine</th>
+                                            <th>Board</th> 
+
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                        data.tests.forEach(test => {
+                            const resultat = test.result === true ? 'RÉUSSI' :
+                                           test.result === false ? 'ÉCHEC' : 'EN COURS';
+                            const badgeClass = test.result === true ? 'bg-success' :
+                                             test.result === false ? 'bg-danger' : 'bg-warning';
+                          
+
+                            html += `
+                                <tr>
+                                    <td><strong>${test.typeTest}</strong></td>
+                                    <td><span class="badge ${badgeClass}">${resultat}</span></td>
+                                    
+                                    <td><small>${test.operateur}</small></td>
+                                    <td><small>${test.machine}</small></td>
+                                    <td><small>${test.board}</small></td>
+                                </tr>`;
+                        });
+
+                        html += `</tbody></table></div>`;
+                    } else {
+                        html += `<div class="alert alert-warning">Aucun test trouvé pour ce produit</div>`;
+                    }
+
+                    document.getElementById('historiqueContent').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('historiqueContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            Erreur lors du chargement de l'historique
+                        </div>`;
+                    console.error(error);
+                });
+        }
+    </script>
+}

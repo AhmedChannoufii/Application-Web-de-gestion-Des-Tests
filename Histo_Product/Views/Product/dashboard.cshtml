@@ -1,0 +1,1075 @@
+﻿@model IEnumerable<Histo_Product.Models.Test>
+@{
+    ViewBag.Title = "Tableau de Bord ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var tousTypesTest = new[] {
+        "Test Initial", "Re-test Initial",
+        "Contrôle Qualité", "Re-contrôle Qualité",
+        "Test Client", "Re-test Client"
+    };
+}
+
+
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+<div class="row mb-4">
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Tests
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Tests Réussis
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.Count(t => t.Result == true)
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Tests Échoués
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.Count(t => t.Result == false)
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Tests En Cours
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @Model.Count(t => t.Result == null)
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Produits Terminés
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @{
+                                var produitsTerminesCount = ViewBag.TerminedProductsCount ?? 0;
+                            }
+                            @produitsTerminesCount
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-center">
+                    <a href="@Url.Action("ProduitsTermines")" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-list me-1"></i>Voir la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Produits Rejetés
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            @{
+                                var produitsRejetesCount = ViewBag.RejectedProductsCount ?? 0;
+                            }
+                            @produitsRejetesCount
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-ban fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-center">
+                    <a href="@Url.Action("ProduitsRejetes")" class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-list me-1"></i>Voir la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-xl-2 col-md-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Produits Non Testés
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @ViewBag.UntestedProducts
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    <div class="mt-2 text-center">
+                        <a href="@Url.Action("UntestedProducts")" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-list me-1"></i>Voir la liste
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+     
+    </div>
+    </div>
+  
+
+
+    <div class="card shadow border-0">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary">
+                <i class="fas fa-history me-2"></i>
+                Historique des Tests (@Model.Count() enregistrements)
+            </h5>
+            <div class="text-muted small">
+                @*  *@
+                Dernière mise à jour: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+            </div>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="fas fa-plus me-1"></i>Nouveau Test
+            </button>
+        </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">ID Test</th>
+                        <th>Date</th>
+                        <th>Num Série</th>
+                        <th>Type Test</th>
+                        <th>Machine</th>
+                        <th>Software</th>
+                        <th>Board</th>
+                        <th>Opérateur</th>
+                        <th>Résultat</th>
+                      
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model.OrderByDescending(x => x.DateDebut))
+                        {
+                            string boardName = item.Board != null ?
+                                $"{item.Board.Code_AsteelFlash} - {item.Board.Designation}" : "—";
+
+                            string operateurName = item.Operateur != null ?
+                                $"{item.Operateur.Nom} {item.Operateur.Prénom}" : "Inconnu";
+
+                            string machineName = item.Machine != null ?
+                                $"{item.Machine.CodeMachine} - {item.Machine.NomMachine}" : "—";
+
+                            string softwareVersion = !string.IsNullOrEmpty(item.TestSoftwareVersion) ?
+                                item.TestSoftwareVersion :
+                                (item.Machine != null ? item.Machine.SoftwareVersion : "—");
+
+                            string badgeClass = "bg-secondary";
+                            if (item.TypeTest == "Test Initial") { badgeClass = "bg-primary"; }
+                            else if (item.TypeTest == "Re-test Initial") { badgeClass = "bg-warning text-dark"; }
+                            else if (item.TypeTest == "Contrôle Qualité") { badgeClass = "bg-info"; }
+                            else if (item.TypeTest == "Re-contrôle Qualité") { badgeClass = "bg-info"; }
+                            else if (item.TypeTest == "Test Client") { badgeClass = "bg-purple"; }
+                            else if (item.TypeTest == "Re-test Client") { badgeClass = "bg-purple"; }
+
+                            <tr data-test-id="@item.Id">
+                                <td class="ps-3"><strong class="text-muted">#@item.Id</strong></td>
+                                <td>@(item.DateDebut?.ToString("dd/MM/yyyy HH:mm", new System.Globalization.CultureInfo("fr-FR")) ?? "N/A")</td>
+                                <td><strong class="text-primary">@item.Num_Serie</strong></td>
+                                <td><span class="badge @badgeClass">@item.TypeTest</span></td>
+                                <td>
+                                    <small class="text-dark">@machineName</small>
+                                </td>
+                                <td>
+                                    <code class="small">@softwareVersion</code>
+                                </td>
+                                <td>@boardName</td>
+                                <td>@operateurName</td>
+                                <td>
+                                    @if (item.Result == true)
+                                    {
+                                        <span class="badge bg-success px-3 py-2">
+                                            <i class="fas fa-check me-1"></i>RÉUSSI
+                                        </span>
+                                    }
+                                    else if (item.Result == false)
+                                    {
+                                        <span class="badge bg-danger px-3 py-2">
+                                            <i class="fas fa-times me-1"></i>ÉCHEC
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark px-3 py-2">
+                                            <i class="fas fa-clock me-1"></i>EN COURS
+                                        </span>
+                                    }
+                                </td>
+                                
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3 text-muted"></i><br>
+                                <h5 class="text-muted">Aucun test enregistré</h5>
+                                <p class="text-muted">Commencez par créer votre premier test de qualité</p>
+                                <button class="btn btn-success mt-2" data-bs-toggle="modal" data-bs-target="#addModal">
+                                    <i class="fas fa-plus me-2"></i>Créer le premier test
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if (Model != null && Model.Any())
+    {
+        <div class="card-footer bg-light">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        Affichage des @Math.Min(Model.Count(), 50) derniers tests sur @Model.Count() au total
+                    </small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">
+                        <i class="fas fa-sync-alt me-1"></i>Actualisé à @DateTime.Now.ToString("HH:mm")
+                    </small>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>Nouveau Test
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="@Url.Action("Save")" id="testForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Numéro de Série <span class="text-danger">*</span></label>
+                            <input type="text" name="numSerie" id="numSerieInput" class="form-control" required
+                                    autofocus />
+                            <div class="form-text">Saisissez le numéro de série du produit</div>
+                            <div id="serieHistory" class="mt-2 small"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Type de Test <span class="text-danger">*</span></label>
+                            <select name="typeTest" id="typeTestSelect" class="form-control" required>
+                                <option value="">-- Sélectionner un type --</option>
+                                @foreach (var type in tousTypesTest)
+                                {
+                                    <option value="@type">@type</option>
+                                }
+                            </select>
+                            <small class="text-muted" id="testHelper">
+                                Sélectionnez le type de test approprié selon l'historique du produit
+                            </small>
+                        </div>
+
+                        <!-- Machine -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Machine <span class="text-danger">*</span></label>
+                            <select name="idMachine" class="form-control" required id="machineSelect">
+                                <option value="">-- Choisir d'abord le Type --</option>
+                                @if (ViewBag.MachineList != null)
+                                {
+                                    foreach (var m in ViewBag.MachineList)
+                                    {
+                                        <option value="@m.Id" data-type="@m.TypeTest" data-software="@m.SoftwareVersion">
+                                            @m.CodeMachine - @m.NomMachine
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text" id="machineHelper">Sélectionnez d'abord le type de test</div>
+                        </div>
+
+                        <!-- Board -->
+                        <div class="col-md-6" >
+                            <label class="form-label fw-bold">Board <span class="text-danger">*</span></label>
+                            <select name="idBoard" class="form-control" required id="boardSelect">
+                                <option value=""> automatique selon type de test</option>
+                                @if (ViewBag.BoardList != null)
+                                {
+                                    foreach (var b in ViewBag.BoardList)
+                                    {
+                                        <option value="@b.Id">
+                                            @b.Code_AsteelFlash - @b.Designation
+                                        </option>
+                                    }
+                                }
+                            </select>
+                         
+                        </div>
+
+                        <!-- Opérateur -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Opérateur <span class="text-danger">*</span></label>
+                            <select name="idOperateur" class="form-control" required id="operateurSelect">
+                                <option value="">-- Choisir un Opérateur --</option>
+                                @if (ViewBag.OperateurList != null)
+                                {
+                                    foreach (var o in ViewBag.OperateurList)
+                                    {
+                                        <option value="@o.Id" data-fonction="@o.Fonction">
+                                            @o.Nom @o.Prénom - @o.Matricule (@o.Fonction)
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">Opérateur responsable du test</div>
+                        </div>
+                    </div>
+
+                    <!-- Résumé de validation -->
+                    <div class="alert alert-light mt-3 mb-0 d-none" id="validationSummary">
+                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Résumé de validation</h6>
+                        <div id="validationDetails" class="small"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitButton">
+                        <i class="fas fa-save me-2"></i>Créer le Test
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Fonction pour obtenir le board selon le type de test
+        function getBoardForTestType(typeTest) {
+            switch (typeTest) {
+                case "Test Initial":
+                case "Re-test Initial":
+                    return "1";  // ← Même board pour Initial et Re-test
+
+                case "Contrôle Qualité":
+                case "Re-contrôle Qualité":
+                    return "2";  // ← Même board pour Contrôle et Re-contrôle
+
+                case "Test Client":
+                case "Re-test Client":
+                    return "3";  // ← Même board pour Client et Re-test Client
+
+                case "PRODUIT REJETÉ - Aucun test possible":
+                    return null;
+
+                default:
+                    return "0";
+            }
+        }
+
+        document.getElementById('numSerieInput')?.addEventListener('blur', function() {
+            const numSerie = this.value.trim().toUpperCase();
+            const typeTestSelect = document.getElementById('typeTestSelect');
+            const serieHistory = document.getElementById('serieHistory');
+
+            if (numSerie.length > 2) {
+                serieHistory.innerHTML = '<div class="alert alert-info p-2">🔍 Vérification de l\'historique...</div>';
+
+                fetch('@Url.Action("CheckTestHistory", "Product")?numSerie=' + encodeURIComponent(numSerie))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data) {
+                            let message = '';
+                            let suggestion = data.suggestion || 'Test Initial';
+
+                            if (!data.produitExiste) {
+                                message = `<div class="alert alert-warning p-2 mb-2">
+                                    <strong> Produit n'existe pas</strong><br>
+                                    Le produit <strong>${numSerie}</strong> n'existe pas dans le système.<br>
+
+                                </div>`;
+
+                                const submitButton = document.getElementById('submitButton');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    submitButton.title = "Créez d'abord le produit";
+                                }
+                            }
+                            else if (data.estRejete) {
+                                message = `<div class="alert alert-danger p-2 mb-2">
+                                    <strong> PRODUIT REJETÉ DÉFINITIVEMENT</strong><br>
+                                    Le produit <strong>${numSerie}</strong> a été rejeté.<br>
+                                    <strong>Raison:</strong> 2 échecs sur <strong>${data.typeRejete}</strong><br>
+                                    <em class="text-danger">Aucun nouveau test n'est possible.</em>
+                                </div>`;
+
+                                const submitButton = document.getElementById('submitButton');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    submitButton.title = "Produit rejeté - Aucun test possible";
+                                }
+
+                            }
+                            else if (data.suggestion && data.suggestion.includes("TERMINÉ")) {
+                                message = `<div class="alert alert-success p-2 mb-2">
+                                     <strong> PRODUIT TERMINÉ</strong><br>
+                                    Le produit <strong>${numSerie}</strong> a complété tous les tests avec succès.<br>
+                                    • Test Initial: RÉUSSI<br>
+                                    • Contrôle Qualité: RÉUSSI<br>
+                                    • Test Client: RÉUSSI<br>
+                                 • Total tests: ${data.totalTests}<br>
+                                <em class="text-success">Aucun nouveau test n'est possible.</em>
+                            </div>`;
+
+                                const submitButton = document.getElementById('submitButton');
+                                if (submitButton) {
+                                    submitButton.disabled = true;
+                                    submitButton.title = "Produit terminé - Aucun test possible";
+                                }
+                            }
+
+                            else if (data.hasTestInitial || data.totalTests > 0) {
+                                const resultText = data.testInitialResult ? 'RÉUSSI' : 'ÉCHEC';
+                                const badgeClass = data.testInitialResult ? 'bg-success' : 'bg-danger';
+                                const dernierResultText = data.dernierTestResult ? 'RÉUSSI' : 'ÉCHEC';
+                                const dernierTestType = data.dernierTestType || 'Aucun';
+
+                                let reTestInfo = '';
+                                if (data.hasReTestReussi) {
+                                    reTestInfo = `<br>• <span class="badge bg-success">Re-test Initial: RÉUSSI</span>`;
+                                }
+
+                                message = `<div class="alert alert-info p-2 mb-2">
+                                    <strong> Historique trouvé pour ${numSerie}:</strong><br>
+
+                                    • Dernier test: ${dernierTestType} <br>
+                                    • Total tests: ${data.totalTests}<br>
+                                    • Statut: <strong class="text-primary">${data.statutProduit}</strong><br>
+                                    • <strong class="text-warning">Suggestion: ${suggestion}</strong>
+                                </div>`;
+
+                                let optionTrouvee = false;
+                                for (let i = 0; i < typeTestSelect.options.length; i++) {
+                                    if (typeTestSelect.options[i].value === suggestion) {
+                                        typeTestSelect.selectedIndex = i;
+                                        optionTrouvee = true;
+                                        break;
+                                    }
+                                }
+
+                                typeTestSelect.dispatchEvent(new Event('change'));
+
+                                const submitButton = document.getElementById('submitButton');
+                                if (submitButton) {
+                                    submitButton.disabled = false;
+                                    submitButton.title = "";
+                                }
+                            } else {
+                                message = `<div class="alert alert-success p-2 mb-2">
+                                     <strong>Nouveau numéro de série</strong><br>
+                                    Produit existe mais aucun test trouvé dans l'historique.<br>
+                                    <strong class="text-success">Suggestion: Test Initial</strong>
+                                </div>`;
+
+                                for (let i = 0; i < typeTestSelect.options.length; i++) {
+                                    if (typeTestSelect.options[i].value === 'Test Initial') {
+                                        typeTestSelect.selectedIndex = i;
+                                        break;
+                                    }
+                                }
+
+                                typeTestSelect.dispatchEvent(new Event('change'));
+
+                                const submitButton = document.getElementById('submitButton');
+                                if (submitButton) {
+                                    submitButton.disabled = false;
+                                    submitButton.title = "";
+                                }
+                            }
+
+                            serieHistory.innerHTML = message;
+
+                        } else {
+                            serieHistory.innerHTML = '<div class="alert alert-warning p-2">Aucune donnée retournée</div>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur:', error);
+                        serieHistory.innerHTML = '<div class="alert alert-danger p-2">❌ Erreur de vérification de l\'historique</div>';
+                    });
+            } else {
+                serieHistory.innerHTML = '';
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.title = "";
+                }
+            }
+        });
+
+        // FILTRAGE AUTOMATIQUE DES MACHINES ET BOARDS PAR TYPE TEST
+        document.getElementById('typeTestSelect')?.addEventListener('change', function() {
+            const typeTest = this.value;
+
+            // Filtrer les machines
+            filterMachinesByTestType(typeTest);
+
+            // Filtrer les boards
+            filterBoardsByTestType(typeTest);
+
+            // Filtrer les opérateurs
+            filterOperateursByTestType(typeTest);
+
+            // Mettre à jour le message d'aide
+            updateTestHelper(typeTest);
+        });
+
+        // Fonction pour filtrer les machines
+        function filterMachinesByTestType(typeTest) {
+            const machineSelect = document.getElementById('machineSelect');
+            const machineHelper = document.getElementById('machineHelper');
+
+            if (!machineSelect) return;
+
+            // Sauvegarder toutes les options au premier chargement
+            if (!window.allMachineOptions) {
+                window.allMachineOptions = Array.from(machineSelect.querySelectorAll('option[data-type]'));
+            }
+
+            // Réinitialiser
+            machineSelect.innerHTML = '<option value="">-- Choisir une machine --</option>';
+
+            if (typeTest) {
+                let machinesTrouvees = 0;
+
+                // Ajouter les machines correspondantes
+                window.allMachineOptions.forEach(option => {
+                    if (option.getAttribute('data-type') === typeTest) {
+                        const newOption = option.cloneNode(true);
+                        machineSelect.appendChild(newOption);
+                        machinesTrouvees++;
+                    }
+                });
+
+                // Message d'aide
+                if (machinesTrouvees > 0) {
+                    machineHelper.innerHTML = `${machinesTrouvees} machine(s) disponible(s) pour ${typeTest}`;
+                    machineHelper.className = 'form-text text-success';
+                } else {
+                    machineHelper.innerHTML = `Aucune machine disponible pour ${typeTest}`;
+                    machineHelper.className = 'form-text text-danger';
+                }
+            } else {
+                machineHelper.innerHTML = 'Sélectionnez d\'abord le type de test';
+                machineHelper.className = 'form-text';
+            }
+        }
+
+        function filterBoardsByTestType(typeTest) {
+            const boardSelect = document.getElementById('boardSelect');
+            if (!boardSelect) return;
+
+            const targetBoardId = getBoardForTestType(typeTest);
+
+            if (!targetBoardId) {
+                boardSelect.innerHTML = '<option value="">-- PRODUIT REJETÉ --</option>';
+                boardSelect.disabled = true;
+                return;
+            }
+
+            boardSelect.disabled = false;
+
+            for (let option of boardSelect.options) {
+                if (option.value === "") continue;
+
+                const isAuthorized = (option.value === targetBoardId);
+                option.style.display = isAuthorized ? '' : 'none';
+                option.disabled = !isAuthorized;
+
+                if (isAuthorized) {
+                    boardSelect.value = targetBoardId;
+                }
+            }
+        }
+
+        function filterOperateursByTestType(typeTest) {
+            const operateurSelect = document.getElementById('operateurSelect');
+            if (!operateurSelect) return;
+
+            for (let option of operateurSelect.options) {
+                if (option.value === "") continue;
+
+                const fonction = option.getAttribute('data-fonction');
+                let isAuthorized = false;
+
+                switch (typeTest) {
+                    case "Test Initial":
+                    case "Re-test Initial":
+                        isAuthorized = (fonction === "Technicien" || fonction === "Superviseur");
+                        break;
+                    case "Contrôle Qualité":
+                    case "Re-contrôle Qualité":
+                        isAuthorized = (fonction === "Ingénieur" || fonction === "Superviseur");
+                        break;
+                    case "Test Client":
+                    case "Re-test Client":
+                        isAuthorized = (fonction === "Superviseur");
+                        break;
+                    default:
+                        isAuthorized = true;
+                }
+
+                option.style.display = isAuthorized ? '' : 'none';
+                option.disabled = !isAuthorized;
+
+                if (option.selected && !isAuthorized) {
+                    operateurSelect.selectedIndex = 0;
+                }
+            }
+        }
+
+        function updateTestHelper(typeTest) {
+            const infoText = document.getElementById('testHelper');
+            if (!infoText) return;
+
+            switch (typeTest) {
+                case 'Test Initial':
+                    infoText.innerHTML = `
+            • <strong>Test Initial</strong>: Premier test sur le produit<br>
+            • <em>Utilisé quand aucun test n'existe pour ce numéro de série</em><br>
+            • <strong>Résultat:</strong> L'opérateur confirmera après le test
+        `;
+                    break;
+                case 'Re-test Initial':
+                    infoText.innerHTML = `
+            • <strong>Re-test Initial</strong>: Test après échec<br>
+            • <strong>Nécessite:</strong> Test Initial existant et en ÉCHEC<br>
+            • <strong>Objectif:</strong> Retester le produit après l'échec<br>
+            •  <strong>Attention:</strong> Maximum 1 re-test autorisé
+        `;
+                    break;
+                case 'Contrôle Qualité':
+                    infoText.innerHTML = `
+            • <strong>Contrôle Qualité</strong>: Audit qualité aléatoire<br>
+            • <strong>Nécessite:</strong> Test Initial RÉUSSI <strong>OU</strong> Re-test Initial RÉUSSI<br>
+            • <strong>Objectif:</strong> Vérifier la qualité en production<br>
+            
+        `;
+                    break;
+                case 'Re-contrôle Qualité':
+                    infoText.innerHTML = `
+            • <strong>Re-contrôle Qualité</strong>: Second contrôle après échec<br>
+            • <strong>Nécessite:</strong> Contrôle Qualité en ÉCHEC<br>
+            • <strong>Objectif:</strong> Retester le produit après échec du contrôle<br>
+            •  <strong>Attention:</strong> Maximum 1 re-contrôle autorisé
+        `;
+                    break;
+                case 'Test Client':
+                    infoText.innerHTML = `
+            • <strong>Test Client</strong>: Test spécifique client<br>
+            • <strong>Nécessite:</strong> Contrôle Qualité RÉUSSI<br>
+            • <strong>Objectif:</strong> Suivre les exigences client spécifiques<br>
+            •  <strong>Autorisé seulement pour:</strong> Superviseurs
+        `;
+                    break;
+                case 'Re-test Client':
+                    infoText.innerHTML = `
+            • <strong>Re-test Client</strong>: Second test client après échec<br>
+            • <strong>Nécessite:</strong> Test Client en ÉCHEC<br>
+            • <strong>Objectif:</strong> Retester le produit après échec du test client<br>
+            •  <strong>Attention:</strong> Maximum 1 re-test client autorisé
+        `;
+                    break;
+                default:
+                    infoText.innerHTML = `
+            <span class="text-muted">
+                Sélectionnez le type de test approprié selon l'historique du produit.<br>
+                Le système suggère automatiquement le type le plus logique.
+            </span>
+        `;
+                    break;
+            }
+        }
+
+
+
+        document.getElementById('testForm')?.addEventListener('submit', function(e) {
+            const numSerieInput = document.getElementById('numSerieInput');
+            const typeTestSelect = document.getElementById('typeTestSelect');
+            const machineSelect = document.getElementById('machineSelect');
+            const boardSelect = document.getElementById('boardSelect');
+            const operateurSelect = document.getElementById('operateurSelect');
+
+            if (numSerieInput && typeTestSelect) {
+                const numSerie = numSerieInput.value.trim();
+                const typeTest = typeTestSelect.value;
+                const idMachine = machineSelect.value;
+                const idBoard = boardSelect.value;
+                const idOperateur = operateurSelect.value;
+
+                
+                if (numSerie.length === 0) {
+                    e.preventDefault();
+                    showAlert(' Le numéro de série est obligatoire !', 'danger');
+                    numSerieInput.focus();
+                    return;
+                }
+
+                if (!typeTest) {
+                    e.preventDefault();
+                    showAlert(' Veuillez sélectionner un type de test !', 'danger');
+                    typeTestSelect.focus();
+                    return;
+                }
+
+                if (!idMachine) {
+                    e.preventDefault();
+                    showAlert(' Veuillez sélectionner une machine !', 'danger');
+                    machineSelect.focus();
+                    return;
+                }
+
+                if (!idBoard) {
+                    e.preventDefault();
+                    showAlert(' Veuillez sélectionner un board !', 'danger');
+                    boardSelect.focus();
+                    return;
+                }
+
+                if (!idOperateur) {
+                    e.preventDefault();
+                    showAlert(' Veuillez sélectionner un opérateur !', 'danger');
+                    operateurSelect.focus();
+                    return;
+                }
+
+                
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours...';
+                }
+            }
+        });
+
+        
+        document.getElementById('addModal')?.addEventListener('hidden.bs.modal', function () {
+            const numSerieInput = document.getElementById('numSerieInput');
+            const typeTestSelect = document.getElementById('typeTestSelect');
+            const machineSelect = document.getElementById('machineSelect');
+            const boardSelect = document.getElementById('boardSelect');
+            const operateurSelect = document.getElementById('operateurSelect');
+            const serieHistory = document.getElementById('serieHistory');
+            const machineHelper = document.getElementById('machineHelper');
+
+            if (numSerieInput) numSerieInput.value = '';
+            if (typeTestSelect) typeTestSelect.selectedIndex = 0;
+            if (machineSelect) {
+                machineSelect.innerHTML = '<option value="">-- Choisir d\'abord le Type --</option>';
+                machineSelect.disabled = false;
+            }
+            if (boardSelect) {
+                boardSelect.selectedIndex = 0;
+                boardSelect.disabled = false;
+            }
+            if (operateurSelect) operateurSelect.selectedIndex = 0;
+            if (serieHistory) serieHistory.innerHTML = '';
+            if (machineHelper) {
+                machineHelper.innerHTML = 'Sélectionnez d\'abord le type de test';
+                machineHelper.className = 'form-text';
+            }
+
+            const submitButton = document.getElementById('submitButton');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Créer le Test';
+            }
+        });
+
+        
+        document.getElementById('addModal')?.addEventListener('shown.bs.modal', function () {
+            const numSerieInput = document.getElementById('numSerieInput');
+            if (numSerieInput) {
+                setTimeout(() => numSerieInput.focus(), 500);
+            }
+        });
+
+       
+        document.querySelectorAll('form[action*="Delete"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const testId = this.querySelector('input[name="id"]')?.value;
+                if (testId && !confirm(`Êtes-vous sûr de vouloir supprimer le test #${testId} ?\n\nCette action est irréversible.`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+
+            const container = document.querySelector('.container-fluid');
+            if (container) {
+                container.insertBefore(alertDiv, container.firstChild);
+                setTimeout(() => { if (alertDiv.parentNode) alertDiv.remove(); }, 5000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const typeTestSelect = document.getElementById('typeTestSelect');
+            if (typeTestSelect) {
+                typeTestSelect.dispatchEvent(new Event('change'));
+            }
+
+            const operateurSelect = document.getElementById('operateurSelect');
+            if (operateurSelect && operateurSelect.options.length > 0 && !operateurSelect.value) {
+                operateurSelect.selectedIndex = 0;
+            }
+
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            console.log(' Système de suivi qualité initialisé avec succès');
+        });
+
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                if (alert && alert.style.opacity !== '0') {
+                    alert.style.transition = 'opacity 0.5s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => { if (alert && alert.parentNode) alert.parentNode.removeChild(alert); }, 500);
+                }
+            }, 5000);
+        });
+    </script>
+
+    <style>
+        .bg-purple {
+            background-color: #6f42c1 !important;
+        }
+
+        .text-purple {
+            color: #6f42c1 !important;
+        }
+
+        .border-left-primary {
+            border-left: 4px solid #4e73df !important;
+        }
+
+        .border-left-success {
+            border-left: 4px solid #1cc88a !important;
+        }
+
+        .border-left-danger {
+            border-left: 4px solid #e74a3b !important;
+        }
+
+        .border-left-info {
+            border-left: 4px solid #36b9cc !important;
+        }
+
+        .border-left-warning {
+            border-left: 4px solid #f6c23e !important;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        .badge {
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+
+        .btn-group-sm > .btn {
+            padding: 0.25rem 0.5rem;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 8px;
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+            border-color: #4e73df;
+        }
+
+        @@keyframes highlightNew {
+            0% {
+                background-color: rgba(40, 167, 69, 0.2);
+            }
+
+            100% {
+                background-color: transparent;
+            }
+        }
+
+        .new-test {
+            animation: highlightNew 2s ease-in-out;
+        }
+
+        select.form-control {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        @@media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+
+            .btn-group-sm > .btn {
+                padding: 0.2rem 0.4rem;
+            }
+
+            .badge {
+                font-size: 0.7em;
+            }
+
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .input-group {
+                width: 100% !important;
+            }
+        }
+
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+            .card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+
+        /* Loading spinner */
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+}

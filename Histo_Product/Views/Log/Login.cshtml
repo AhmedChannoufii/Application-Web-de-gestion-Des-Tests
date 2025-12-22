@@ -1,0 +1,183 @@
+﻿@{
+    ViewBag.Title = "Connexion";
+    ViewBag.HideNavbar = true;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2 class="mb-0">Connexion</h2>
+                </div>
+
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            @ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (ViewBag.Success != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @ViewBag.Success
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (Session["DebugPassword"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show">
+                            <h6><i class="fas fa-key me-2"></i>MOT DE PASSE DE TEST</h6>
+                            <strong>@Session["DebugPassword"]</strong>
+                            <br><small class="text-muted">Ceci n'apparaît qu'en mode test</small>
+                            @{ Session.Remove("DebugPassword"); }
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("Login", "Log", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+
+                        <div class="form-group mb-3">
+                            <label class="form-label fw-bold">Nom d'utilisateur</label>
+                            <input type="text" name="username" class="form-control form-control-lg" required
+                                   value="@ViewBag.Username" />
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-bold">Mot de passe</label>
+                            <input type="password" name="password" class="form-control form-control-lg" required />
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i> Se connecter
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">
+                                <i class="fas fa-key me-1"></i> Mot de passe oublié ?
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="forgotPasswordModalLabel">
+                    <i class="fas fa-unlock-alt me-2"></i>Réinitialisation du mot de passe
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               
+
+                <form id="forgotPasswordForm">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group mb-3">Entrez votre email.</label>
+                        <input type="email" name="email" class="form-control" required
+                               placeholder="exemple@asteelflash.com" />
+                     
+                    </div>
+
+                    <div class="alert alert-info d-none" id="forgotPasswordMessage">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span id="messageText"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+          
+                <button type="button" class="btn btn-warning" onclick="submitForgotPassword()">
+                    Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function submitForgotPassword() {
+            const form = document.getElementById('forgotPasswordForm');
+            const formData = new FormData(form);
+            const messageDiv = document.getElementById('forgotPasswordMessage');
+            const messageText = document.getElementById('messageText');
+            const submitBtn = event.target;
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Traitement...';
+
+            fetch('@Url.Action("ForgotPassword", "Log")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageText.innerHTML = data.message;
+                    messageDiv.className = 'alert alert-success';
+                    form.reset();
+
+                  
+                } else {
+                    messageText.innerHTML = data.message;
+                    messageDiv.className = 'alert alert-danger';
+                }
+                messageDiv.classList.remove('d-none');
+            })
+            .catch(error => {
+                messageText.innerHTML = 'Erreur de connexion au serveur';
+                messageDiv.className = 'alert alert-danger';
+                messageDiv.classList.remove('d-none');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Réinitialiser';
+            });
+        }
+
+        $('#forgotPasswordModal').on('show.bs.modal', function () {
+            document.getElementById('forgotPasswordMessage').classList.add('d-none');
+            document.getElementById('forgotPasswordForm').reset();
+        });
+    </script>
+
+    <style>
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .alert ul {
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+    </style>
+}
