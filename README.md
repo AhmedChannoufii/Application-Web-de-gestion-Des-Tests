@@ -68,7 +68,7 @@ Une application web complète pour la gestion des tests de contrôle qualité da
 - Pas de tests en double du même type
 - Le produit doit exister avant test
 
-## 📈 Méthodes Clés
+##  Méthodes Clés
 
 ### ProductController.cs
 - `CheckTestHistory()` - Vérification produit en temps réel
