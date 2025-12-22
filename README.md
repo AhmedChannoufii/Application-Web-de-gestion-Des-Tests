@@ -1,4 +1,4 @@
-Application Web de Gestion des Tests Qualité
+Application Web de Gestion des Tests 
 
 ##  Système de Gestion Industrielle pour Asteel Flash (EMS)
 
@@ -45,15 +45,6 @@ Une application web complète pour la gestion des tests de contrôle qualité da
 - **Visual Studio 2022** - Environnement de développement
 - **SQL Server Management Studio** - Gestion de base de données
 
-## 📊 Schéma de Base de Données
-Produit → Test (1..*)
-Test → Board (1..1)
-Test → Machine (1..1)
-Test → Opérateur (1..1)
-Test → Produit (1..1)
-
-
-
 ##  Règles Métier Implémentées
 
 ### 1. Workflow Séquentiel
@@ -92,32 +83,32 @@ Test → Produit (1..1)
 - Compte à rebours pour confirmation opérateur
 - Sélection automatique du board selon type de test
 
-# 🔐 ACCÈS DÉMO
+# ACCÈS DÉMO
 
-## 👑 ADMIN
-- **User:** `admin`
-- **Pass:** `$cPpUC3DmM`
+##  ADMIN
+- **Nom d'utilisateur:** `admin`
+- **Mot de passe:** `$cPpUC3DmM`
 
-## 👨‍💼 UTILISATEUR  
-- **User:** `ahmed`
-- **Pass:** `gSqnFFetpF`
+##  UTILISATEUR  
+- **Nom d'utilisateur:** `ahmed`
+- **Mot de passe:** `gSqnFFetpF`
 
-## 🔧 OPÉRATEURS
+##  OPÉRATEURS
 
 ### Technicien (Test Initial)
 - **Nom:** Ben Ammar Mohamed
-- **User:** `T001`
-- **Pass:** `T001`
+- **Nom d'utilisateur:** `T001`
+- **Mot de passe:** `T001`
 
 ### Ingénieur (Contrôle Qualité)  
 - **Nom:** Dhahri Ali
-- **User:** `I001`
-- **Pass:** `I001`
+- **Nom d'utilisateur:** `I001`
+- **Mot de passe:** `I001`
 
 ### Superviseur (Test Client)
 - **Nom:** Masmoudi Houssem
-- **User:** `S001`  
-- **Pass:** `S001`
+- **Nom d'utilisateur:** `S001`  
+- **Mot de passe:** `S001`
   
 
 
