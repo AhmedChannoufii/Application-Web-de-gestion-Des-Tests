@@ -24,7 +24,7 @@ Une application web complète pour la gestion des tests de contrôle qualité da
 - Export Excel avec mise en forme automatique
 - Tableaux de bord temps réel avec visualisations Chart.js
 
-## 🛠️ Stack Technologique
+##  Stack Technologique
 
 ### Backend
 - **ASP.NET MVC** - Framework web
