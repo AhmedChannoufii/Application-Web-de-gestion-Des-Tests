@@ -75,32 +75,6 @@ Une application web complète pour la gestion des tests de contrôle qualité da
 - Compte à rebours pour confirmation opérateur
 - Sélection automatique du board selon type de test
 
-# ACCÈS DÉMO
 
-##  ADMIN
-- **Nom d'utilisateur:** `admin`
-- **Mot de passe:** `$cPpUC3DmM`
-
-##  UTILISATEUR  
-- **Nom d'utilisateur:** `ahmed`
-- **Mot de passe:** `gSqnFFetpF`
-
-##  OPÉRATEURS
-
-### Technicien (Test Initial)
-- **Nom:** Ben Ammar Mohamed
-- **Nom d'utilisateur:** `T001`
-- **Mot de passe:** `T001`
-
-### Ingénieur (Contrôle Qualité)  
-- **Nom:** Dhahri Ali
-- **Nom d'utilisateur:** `I001`
-- **Mot de passe:** `I001`
-
-### Superviseur (Test Client)
-- **Nom:** Masmoudi Houssem
-- **Nom d'utilisateur:** `S001`  
-- **Mot de passe:** `S001`
-  
 
 
